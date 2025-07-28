@@ -1,0 +1,7 @@
+streamlit
+mistralai
+python-dotenv
+gtts
+pdf2image
+pillow
+PyMuPDF

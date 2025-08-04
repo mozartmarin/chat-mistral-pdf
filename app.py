@@ -1,7 +1,7 @@
 import os
 from io import BytesIO
 
-import fitz  # PyMuPDF
+import fitz  # PyMuRAG
 import streamlit as st
 from dotenv import load_dotenv
 from gtts import gTTS
@@ -10,7 +10,7 @@ from mistralai import Mistral, DocumentURLChunk
 # -----------------------------------------------------------------------------
 # Configurações de página
 # -----------------------------------------------------------------------------
-st.set_page_config(page_title="Chat com PDF via Mistral", layout="wide")
+st.set_page_config(page_title="Chat com RAG via Mistral", layout="wide")
 
 # -----------------------------------------------------------------------------
 # Estilo visual
@@ -56,9 +56,9 @@ st.markdown('<div class="main-header">', unsafe_allow_html=True)
 st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 # st.image("static/logo_skyone.png", use_container_width=False, width=100)
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("<h1>Agente de Inteligência Artificial com PDF</h1>", unsafe_allow_html=True)
+st.markdown("<h1>Agente de Inteligência Artificial com RAG</h1>", unsafe_allow_html=True)
 st.markdown(
-    "<p>Converse em linguagem natural com documentos PDF escaneados ou nativos.</p>",
+    "<p>Converse em linguagem natural com documentos RAG escaneados ou nativos.</p>",
     unsafe_allow_html=True,
 )
 st.markdown("</div>", unsafe_allow_html=True)
@@ -95,18 +95,18 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # -----------------------------------------------------------------------------
-# Upload do PDF
+# Upload do RAG
 # -----------------------------------------------------------------------------
-pdf_file = st.file_uploader("Envie o PDF:", type=["pdf"])
+RAG_file = st.file_uploader("Envie o RAG:", type=["PDF"])
 
-if pdf_file:
-    st.success(f"✅ Arquivo '{pdf_file.name}' carregado com sucesso.")
+if RAG_file:
+    st.success(f"✅ Arquivo '{RAG_file.name}' carregado com sucesso.")
 
     try:
-        with fitz.open(stream=pdf_file.getvalue(), filetype="pdf") as doc:
+        with fitz.open(stream=RAG_file.getvalue(), filetype="RAG") as doc:
             extracted_text = "\n".join([page.get_text() for page in doc])
     except Exception as e:
-        st.error(f"Erro ao ler PDF com PyMuPDF: {e}")
+        st.error(f"Erro ao ler RAG com PyMuRAG: {e}")
         extracted_text = ""
 
     if force_ocr or len(extracted_text.strip()) < 30:
@@ -114,7 +114,7 @@ if pdf_file:
 
         try:
             uploaded = client.files.upload(
-                file={"file_name": pdf_file.name, "content": pdf_file.getvalue()},
+                file={"file_name": RAG_file.name, "content": RAG_file.getvalue()},
                 purpose="ocr",
             )
             signed_url = client.files.get_signed_url(file_id=uploaded.id, expiry=1)
@@ -129,21 +129,21 @@ if pdf_file:
             st.error(f"❌ Erro no OCR via Mistral: {e}")
             st.stop()
     else:
-        st.info("📝 Texto nativo detectado no PDF. OCR não necessário.")
+        st.info("📝 Texto nativo detectado no RAG. OCR não necessário.")
         content_text = extracted_text
 
-    if not any("Conteúdo do PDF:" in msg["content"] for msg in st.session_state.messages):
+    if not any("Conteúdo do RAG:" in msg["content"] for msg in st.session_state.messages):
         st.session_state.messages.append(
             {
                 "role": "system",
-                "content": "Você é um assistente que responde com base no conteúdo de um PDF fornecido.",
+                "content": "Você é um assistente que responde com base no conteúdo de um RAG fornecido.",
             }
         )
         st.session_state.messages.append(
-            {"role": "user", "content": f"Conteúdo do PDF:\n\n{content_text[:20000]}"}
+            {"role": "user", "content": f"Conteúdo do RAG:\n\n{content_text[:20000]}"}
         )
 
-    user_input = st.text_input("Faça uma pergunta sobre o PDF:")
+    user_input = st.text_input("Faça uma pergunta sobre o RAG:")
 
     if user_input:
         st.session_state.messages.append({"role": "user", "content": user_input})
@@ -174,4 +174,4 @@ if pdf_file:
         role = "Você" if msg["role"] == "user" else "Assistente"
         st.markdown(f"**{role}:** {msg['content']}")
 else:
-    st.info("📄 Envie um PDF para começar.")
+    st.info("📄 Envie um RAG para começar.")
